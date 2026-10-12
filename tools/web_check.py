@@ -207,6 +207,11 @@ def find_chrome() -> Path:
                  " (macOS only; install with: npx playwright install chromium,"
                  " or set CHROME_PATH to a Chrome for Testing executable)")
 
+    def revision(path: Path) -> int:
+        m = re.search(r"chromium-(\d+)", str(path))
+        return int(m.group(1)) if m else -1
+    return max(found, key=revision)
+
 
 def chrome_flags(profile: str, swiftshader: bool, dpr: float = 1.0) -> list[str]:
     """Headless Chrome at the device pixel ratio (1 unless asked), frame rate uncapped (so frame times are not the
