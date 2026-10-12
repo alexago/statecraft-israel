@@ -192,16 +192,20 @@ class ShotCollector:
 
 
 def find_chrome() -> Path:
-    """The newest Chrome for Testing in the Playwright cache (macOS, arm64 or x64), by numeric revision."""
+    """The newest Chrome for Testing in the Playwright cache (macOS, arm64 or x64), by numeric revision.
+    CHROME_PATH, when set, overrides the lookup and works on any platform."""
+    override = os.environ.get("CHROME_PATH")
+    if override:
+        path = Path(override)
+        if not path.is_file():
+            sys.exit(f"CHROME_PATH is not a file: {path}")
+        return path
+
     found = list(Path.home().joinpath("Library", "Caches").glob(CHROME_GLOB))
     if not found:
         sys.exit("Chrome for Testing not found under ~/Library/Caches/ms-playwright/chromium-<rev>/chrome-mac*"
-                 " (macOS only; install with: npx playwright install chromium)")
-
-    def revision(path: Path) -> int:
-        m = re.search(r"chromium-(\d+)", str(path))
-        return int(m.group(1)) if m else -1
-    return max(found, key=revision)
+                 " (macOS only; install with: npx playwright install chromium,"
+                 " or set CHROME_PATH to a Chrome for Testing executable)")
 
 
 def chrome_flags(profile: str, swiftshader: bool, dpr: float = 1.0) -> list[str]:
